@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactoryState;
 import org.neo4j.kernel.GraphDatabaseDependencies;
+import org.neo4j.kernel.configuration.Config;
 import org.neo4j.kernel.impl.factory.GraphDatabaseFacade;
 import org.neo4j.kernel.impl.factory.GraphDatabaseFacadeFactory;
 import org.neo4j.kernel.impl.proc.Procedures;
@@ -122,12 +123,14 @@ public abstract class ClusterDatabasesIntegrationTest {
 
         params.putAll(addictionalParams(i, instanceClass));
 
+        Config config = Config.embeddedDefaults(params);
+
         File storeDir = Files.createTempDirectory(TMP_PATH_PREFIX + i).toFile();
         storeDir.deleteOnExit(); // it doesn't work very well
 
         GraphDatabaseService database = (GraphDatabaseService) instanceClass
-                .getConstructor(File.class, Map.class, GraphDatabaseFacadeFactory.Dependencies.class)
-                .newInstance(storeDir, params, dependencies);
+                .getConstructor(File.class, Config.class, GraphDatabaseFacadeFactory.Dependencies.class)
+                .newInstance(storeDir, config, dependencies);
 
         LOG.info("An instance of class " + instanceClass.getSimpleName() + " has been created");
         // Too verbose, we leave it at debug level

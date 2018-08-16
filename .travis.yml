@@ -1,12 +1,27 @@
+
+sudo: required
 language: java
 
 jdk:
   - oraclejdk8
 
-branches:
-  only:
-    - master
 
-after_success:
-  - echo "<settings><servers><server><id>ossrh</id><username>\${env.OSSRH_USER}</username><password>\${env.OSSRH_PASS}</password></server></servers></settings>" > ~/settings.xml
-  - mvn deploy --settings ~/settings.xml
+
+script:
+  - mvn clean cobertura:cobertura -Dtest=RandomNodeSelectorTest#shouldReturnNullOnEmptyDatabase -DfailIfNoTests=false
+
+before_deploy:
+- tar -zcvf coverage-result.tar.gz /home/travis/build/leusonmario/neo4j-framework/target/site/cobertura
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "fPiQ8lJlLjD7LtoV5nJnT978h9sZhVyQQzAZgXyKNZrG/kvbgieSW3DDZeDRP5zFhPFY0L6KPd8ajOqpfxdjNv5KK+uRlQIN+v1LAe5lKkMjoc2Z4y2J5Z9tLElztMPFPmptpWwaio4wj2AHzuYmEjyK8u2BNACg1BLZNhjAsheyCWsfqLTiZEBv2OIBlaErNf/dKuEhaAgq4bpZLz8vl1yHbx9kNOWOsI3bYww92bbUG0s28HipKe94KZ/L8jU47vOTjQKrVTGuIge/bFkZlqHJOOdqhMw20S6XoXoOfw54lAzmGJf62IpEKMohxvz2fztOGFKYgWDrmqb/uqTO/DEDLDMpq/kDC3ZAhmwypSMGFBtWvN4B4c4cNd8Q1iUxCQy6Njmw7wACs/MPUmZy3hsrjv0q+3z0F0vW192A3dmvYrjxi1NkIBAqHRynRWg2MJ07qxQ/bdyZfyu4HPy3itjitmkn4fhG+eg5wEcDrM6tFzmS2It1NfpqgSczVs4Un22H6Ym93YP0Ap3k5vbhf4af/Vu4nOMzol/aWdzgU39AOLoxFRCM4c3/abQEB5H/5NhWRb7RRhzkoeoHlz8tIyewbmdnYQEKh4oCUOZilIJZBHYKQSO4npDA9f/qCapfEaSh5SIdl/Y7SfqculqLAIAQw7ojt0oU8xNynWuQ7k4="
+
+
+  file: coverage-result.tar.gz
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
